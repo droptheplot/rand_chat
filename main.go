@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	_ "github.com/lib/pq"
@@ -38,16 +39,12 @@ func main() {
 
 	telegram.SetWebhook()
 
-	http.HandleFunc("/", handler)
-	http.ListenAndServe(":8080", nil)
+	r := mux.NewRouter()
+	r.HandleFunc("/api/update", UpdateHandler).Methods("POST")
+	http.ListenAndServe(":8080", r)
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/api" || r.Method != "POST" {
-		http.NotFound(w, r)
-		return
-	}
-
+func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 	var update telegram.Update
 	json.NewDecoder(r.Body).Decode(&update)
 
