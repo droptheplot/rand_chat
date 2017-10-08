@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"html/template"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -18,6 +19,7 @@ import (
 )
 
 var DB *gorm.DB
+var templates = template.Must(template.ParseGlob("templates/*.html"))
 
 func init() {
 	var err error
@@ -40,8 +42,17 @@ func main() {
 	telegram.SetWebhook()
 
 	r := mux.NewRouter()
+	r.HandleFunc("/", IndexHandler).Methods("GET")
 	r.HandleFunc("/api/update", UpdateHandler).Methods("POST")
 	http.ListenAndServe(":8080", r)
+}
+
+func IndexHandler(w http.ResponseWriter, r *http.Request) {
+	err := templates.ExecuteTemplate(w, "index.html", map[string]string{"Title": "qwe"})
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func UpdateHandler(w http.ResponseWriter, r *http.Request) {
