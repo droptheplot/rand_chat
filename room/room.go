@@ -1,8 +1,9 @@
 package room
 
 import (
+	"time"
+
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
 
 	"github.com/droptheplot/rand_chat/telegram"
 )
@@ -10,13 +11,15 @@ import (
 var DB *gorm.DB
 
 type Room struct {
-	ID      int
-	OwnerID int64
-	GuestID int64 `gorm:"default:NULL"`
+	ID        int
+	OwnerID   int64
+	GuestID   int64 `gorm:"default:NULL"`
+	Active    bool  `gorm:"default:TRUE"`
+	CreatedAt time.Time
 }
 
 func Find(ID int64) (room Room, targetID int64) {
-	DB.Where("owner_id = ?", ID).Or("guest_id = ?", ID).First(&room)
+	DB.Where("(owner_id = ? OR guest_id = ?) AND active = TRUE", ID, ID).First(&room)
 
 	if room.OwnerID == ID {
 		targetID = room.GuestID
@@ -28,7 +31,7 @@ func Find(ID int64) (room Room, targetID int64) {
 }
 
 func Join(ID int64) (room Room) {
-	DB.Where("guest_id is null AND owner_id != ?", ID).First(&room)
+	DB.Where("guest_id IS NULL AND owner_id != ? AND active = TRUE", ID).First(&room)
 
 	if DB.NewRecord(room) {
 		room = Create(ID)
@@ -52,13 +55,13 @@ func Create(ownerID int64) (room Room) {
 	return room
 }
 
-func Destroy(ID int64) {
+func Stop(ID int64) {
 	var room Room
 
-	DB.Where("owner_id = ?", ID).Or("guest_id = ?", ID).First(&room)
+	DB.Where("(owner_id = ? OR guest_id = ?) AND active = TRUE", ID, ID).First(&room)
 
 	telegram.SendMessage(room.OwnerID, "Disconnected.")
 	telegram.SendMessage(room.GuestID, "Disconnected.")
 
-	DB.Delete(&room)
+	DB.Model(&room).Update("active", false)
 }

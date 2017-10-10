@@ -63,7 +63,7 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 	case "/start":
 		room.Join(update.Message.Chat.ID)
 	case "/stop":
-		room.Destroy(update.Message.Chat.ID)
+		room.Stop(update.Message.Chat.ID)
 	default:
 		_, targetID := room.Find(update.Message.Chat.ID)
 
