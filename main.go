@@ -65,7 +65,9 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 	case "/stop":
 		models.StopRoom(update.Message.Chat.ID)
 	default:
-		_, targetID := models.FindRoom(update.Message.Chat.ID)
+		room, targetID := models.FindRoom(update.Message.Chat.ID)
+
+		models.CreateMessage(room.ID)
 
 		telegram.SendMessage(targetID, update.Message.Text)
 	}
