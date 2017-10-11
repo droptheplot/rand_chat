@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	"github.com/droptheplot/rand_chat/env"
 	"github.com/droptheplot/rand_chat/telegram"
 )
 
@@ -16,7 +17,7 @@ type Room struct {
 }
 
 func FindRoom(ID int64) (room Room, targetID int64) {
-	DB.Where("(owner_id = ? OR guest_id = ?) AND active = TRUE", ID, ID).First(&room)
+	env.DB.Where("(owner_id = ? OR guest_id = ?) AND active = TRUE", ID, ID).First(&room)
 
 	if room.OwnerID == ID {
 		targetID = room.GuestID
@@ -28,12 +29,12 @@ func FindRoom(ID int64) (room Room, targetID int64) {
 }
 
 func JoinRoom(ID int64) (room Room) {
-	DB.Where("guest_id IS NULL AND owner_id != ? AND active = TRUE", ID).First(&room)
+	env.DB.Where("guest_id IS NULL AND owner_id != ? AND active = TRUE", ID).First(&room)
 
-	if DB.NewRecord(room) {
+	if env.DB.NewRecord(room) {
 		room = CreateRoom(ID)
 	} else {
-		DB.Model(&room).Update("guest_id", ID)
+		env.DB.Model(&room).Update("guest_id", ID)
 
 		telegram.SendMessage(room.OwnerID, "Someone found, say hello!")
 		telegram.SendMessage(room.GuestID, "Someone found, say hello!")
@@ -45,7 +46,7 @@ func JoinRoom(ID int64) (room Room) {
 func CreateRoom(ownerID int64) (room Room) {
 	room = Room{OwnerID: ownerID}
 
-	DB.Create(&room)
+	env.DB.Create(&room)
 
 	telegram.SendMessage(room.OwnerID, "Waiting for someone.")
 
@@ -55,10 +56,10 @@ func CreateRoom(ownerID int64) (room Room) {
 func StopRoom(ID int64) {
 	var room Room
 
-	DB.Where("(owner_id = ? OR guest_id = ?) AND active = TRUE", ID, ID).First(&room)
+	env.DB.Where("(owner_id = ? OR guest_id = ?) AND active = TRUE", ID, ID).First(&room)
 
 	telegram.SendMessage(room.OwnerID, "Disconnected.")
 	telegram.SendMessage(room.GuestID, "Disconnected.")
 
-	DB.Model(&room).Update("active", false)
+	env.DB.Model(&room).Update("active", false)
 }
