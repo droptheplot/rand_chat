@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"html/template"
 	"net/http"
+	"os"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 
 	"github.com/droptheplot/rand_chat/models"
@@ -19,7 +21,7 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/", IndexHandler).Methods("GET")
 	r.HandleFunc("/api/update", UpdateHandler).Methods("POST")
-	http.ListenAndServe(":8080", r)
+	http.ListenAndServe(":8080", handlers.LoggingHandler(os.Stdout, r))
 }
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
