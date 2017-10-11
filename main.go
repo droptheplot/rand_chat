@@ -44,7 +44,7 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 	default:
 		room, targetID := models.FindRoom(update.Message.Chat.ID)
 
-		models.CreateMessage(room.ID)
+		go models.CreateMessage(room.ID)
 
 		telegram.SendMessage(targetID, update.Message.Text)
 	}
