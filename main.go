@@ -14,7 +14,7 @@ import (
 	_ "github.com/mattes/migrate/source/file"
 
 	"github.com/droptheplot/rand_chat/config"
-	"github.com/droptheplot/rand_chat/room"
+	"github.com/droptheplot/rand_chat/models"
 	"github.com/droptheplot/rand_chat/telegram"
 )
 
@@ -31,7 +31,7 @@ func init() {
 
 	DB.LogMode(true)
 
-	room.DB = DB
+	models.DB = DB
 }
 
 func main() {
@@ -61,11 +61,11 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch update.Message.Text {
 	case "/start":
-		room.Join(update.Message.Chat.ID)
+		models.JoinRoom(update.Message.Chat.ID)
 	case "/stop":
-		room.Stop(update.Message.Chat.ID)
+		models.StopRoom(update.Message.Chat.ID)
 	default:
-		_, targetID := room.Find(update.Message.Chat.ID)
+		_, targetID := models.FindRoom(update.Message.Chat.ID)
 
 		telegram.SendMessage(targetID, update.Message.Text)
 	}
