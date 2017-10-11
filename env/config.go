@@ -1,17 +1,17 @@
-package config
+package env
 
 import (
-	"os"
 	"encoding/json"
+	"os"
 )
 
-type store struct {
-	Webhook string `json:"webhook"`
+type config struct {
+	Webhook  string `json:"webhook"`
 	Database string `json:"database"`
 	Telegram string `json:"telegram"`
 }
 
-var Store store
+var Config config
 
 func init() {
 	file, err := os.Open("config.json")
@@ -20,7 +20,7 @@ func init() {
 		panic(err)
 	}
 
-	json.NewDecoder(file).Decode(&Store)
+	json.NewDecoder(file).Decode(&Config)
 
 	if err != nil {
 		panic(err)

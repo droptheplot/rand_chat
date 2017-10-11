@@ -13,7 +13,7 @@ import (
 	"github.com/mattes/migrate/database/postgres"
 	_ "github.com/mattes/migrate/source/file"
 
-	"github.com/droptheplot/rand_chat/config"
+	"github.com/droptheplot/rand_chat/env"
 	"github.com/droptheplot/rand_chat/models"
 	"github.com/droptheplot/rand_chat/telegram"
 )
@@ -23,7 +23,7 @@ var templates = template.Must(template.ParseGlob("templates/*.html"))
 
 func init() {
 	var err error
-	DB, err = gorm.Open("postgres", config.Store.Database)
+	DB, err = gorm.Open("postgres", env.Store.Database)
 
 	if err != nil {
 		panic(err)

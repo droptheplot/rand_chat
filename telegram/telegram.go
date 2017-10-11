@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/droptheplot/rand_chat/config"
+	"github.com/droptheplot/rand_chat/env"
 )
 
 var base = "https://api.telegram.org"
@@ -21,11 +21,11 @@ func SendMessage(chatID int64, text string) *http.Response {
 }
 
 func SetWebhook() *http.Response {
-	response, _ := http.PostForm(build("setWebhook"), url.Values{"url": {config.Store.Webhook}})
+	response, _ := http.PostForm(build("setWebhook"), url.Values{"url": {env.Store.Webhook}})
 
 	return response
 }
 
 func build(suffix string) string {
-	return fmt.Sprintf("%s/bot%s/%s", base, config.Store.Telegram, suffix)
+	return fmt.Sprintf("%s/bot%s/%s", base, env.Store.Telegram, suffix)
 }
