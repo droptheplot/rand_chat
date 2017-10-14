@@ -20,12 +20,13 @@ func main() {
 
 	r := mux.NewRouter()
 	r.HandleFunc("/", IndexHandler).Methods("GET")
+	r.HandleFunc("/api/chart", ChartHandler).Methods("GET")
 	r.HandleFunc("/api/update", UpdateHandler).Methods("POST")
 	http.ListenAndServe(":8080", handlers.LoggingHandler(os.Stdout, r))
 }
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
-	err := templates.ExecuteTemplate(w, "index.html", map[string]string{"Title": "qwe"})
+	err := templates.ExecuteTemplate(w, "index.html", map[string]string{"Title": "RandChat"})
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -50,4 +51,18 @@ func UpdateHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func ChartHandler(w http.ResponseWriter, r *http.Request) {
+	var charts = make(map[string][]interface{})
+
+	for _, chart := range models.GetCharts() {
+		charts["dates"] = append(charts["dates"], chart.Date.Format("2 Jan"))
+		charts["counts"] = append(charts["counts"], chart.Count)
+	}
+
+	result, _ := json.Marshal(charts)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(result)
 }
