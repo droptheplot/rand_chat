@@ -1,1 +1,2 @@
 DROP TABLE IF EXISTS rooms;
+DROP TYPE app;
