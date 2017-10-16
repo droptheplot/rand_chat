@@ -10,31 +10,36 @@ import (
 type Room struct {
 	ID        int
 	OwnerID   int64
-	GuestID   int64 `gorm:"default:NULL"`
-	Active    bool  `gorm:"default:TRUE"`
+	OwnerApp  string
+	GuestID   int64  `gorm:"default:NULL"`
+	GuestApp  string `gorm:"default:NULL"`
+	Active    bool   `gorm:"default:TRUE"`
 	CreatedAt time.Time
 	Messages  []Message
 }
 
-func FindRoom(ID int64) (room Room, targetID int64) {
-	env.DB.Where("(owner_id = ? OR guest_id = ?) AND active = TRUE", ID, ID).First(&room)
+func FindRoom(ID int64, app string) (room Room, targetID int64, targetApp string) {
+	env.DB.Where(`((owner_id = ? AND owner_app = ?) OR (guest_id = ? AND guest_app = ?))
+									AND active = TRUE`, ID, app, ID, app).First(&room)
 
 	if room.OwnerID == ID {
 		targetID = room.GuestID
+		targetApp = room.GuestApp
 	} else {
 		targetID = room.OwnerID
+		targetApp = room.OwnerApp
 	}
 
-	return room, targetID
+	return room, targetID, targetApp
 }
 
-func JoinRoom(ID int64) (room Room) {
+func JoinRoom(ID int64, app string) (room Room) {
 	env.DB.Where("guest_id IS NULL AND owner_id != ? AND active = TRUE", ID).First(&room)
 
 	if env.DB.NewRecord(room) {
-		room = CreateRoom(ID)
+		room = CreateRoom(ID, app)
 	} else {
-		env.DB.Model(&room).Update("guest_id", ID)
+		env.DB.Model(&room).Updates(Room{GuestID: ID, GuestApp: app})
 
 		telegram.SendMessage(room.OwnerID, "Someone found, say hello!")
 		telegram.SendMessage(room.GuestID, "Someone found, say hello!")
@@ -43,8 +48,8 @@ func JoinRoom(ID int64) (room Room) {
 	return room
 }
 
-func CreateRoom(ownerID int64) (room Room) {
-	room = Room{OwnerID: ownerID}
+func CreateRoom(ownerID int64, app string) (room Room) {
+	room = Room{OwnerID: ownerID, OwnerApp: app}
 
 	env.DB.Create(&room)
 
@@ -53,10 +58,15 @@ func CreateRoom(ownerID int64) (room Room) {
 	return room
 }
 
-func StopRoom(ID int64) {
+func StopRoom(ID int64, app string) {
 	var room Room
 
-	env.DB.Where("(owner_id = ? OR guest_id = ?) AND active = TRUE", ID, ID).First(&room)
+	env.DB.Where(`((owner_id = ? AND owner_app = ?) OR (guest_id = ? AND guest_app = ?))
+									AND active = TRUE`, ID, ID).First(&room)
+
+	if env.DB.NewRecord(room) {
+		return
+	}
 
 	telegram.SendMessage(room.OwnerID, "Disconnected.")
 	telegram.SendMessage(room.GuestID, "Disconnected.")

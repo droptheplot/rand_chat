@@ -9,6 +9,8 @@ type config struct {
 	Webhook  string `json:"webhook"`
 	Database string `json:"database"`
 	Telegram string `json:"telegram"`
+	VK       string `json:"vk"`
+	VKToken  string `json:"vk_token"`
 }
 
 var Config config
