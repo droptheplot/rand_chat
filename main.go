@@ -21,10 +21,12 @@ func main() {
 	telegram.SetWebhook()
 
 	r := mux.NewRouter()
+
 	r.HandleFunc("/", IndexHandler).Methods("GET")
 	r.HandleFunc("/api/chart", ChartHandler).Methods("GET")
 	r.HandleFunc("/api/telegram", TelegramHandler).Methods("POST")
 	r.HandleFunc("/api/vk", VKHandler).Methods("POST")
+
 	http.ListenAndServe(":8080", handlers.LoggingHandler(os.Stdout, r))
 }
 
@@ -40,13 +42,11 @@ func TelegramHandler(w http.ResponseWriter, r *http.Request) {
 	var update telegram.Update
 	json.NewDecoder(r.Body).Decode(&update)
 
-	message := Message{
+	models.Message{
 		Text:    update.Message.Text,
 		UserID:  update.Message.User.ID,
 		UserApp: "telegram",
-	}
-
-	MessageHandler(message)
+	}.Handle()
 
 	w.WriteHeader(http.StatusOK)
 }
@@ -65,13 +65,11 @@ func VKHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	message := Message{
+	models.Message{
 		Text:    event.Message.Body,
 		UserID:  event.Message.UserID,
 		UserApp: "vk",
-	}
-
-	MessageHandler(message)
+	}.Handle()
 
 	w.Write([]byte("ok"))
 }
@@ -88,32 +86,4 @@ func ChartHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(result)
-}
-
-type Message struct {
-	Text    string
-	UserID  int64
-	UserApp string
-}
-
-func MessageHandler(message Message) {
-	switch message.Text {
-	case "/start":
-		models.JoinRoom(message.UserID, message.UserApp)
-	case "/stop":
-		models.StopRoom(message.UserID, message.UserApp)
-	default:
-		room, targetID, targetApp := models.FindRoom(message.UserID, message.UserApp)
-
-		go models.CreateMessage(room.ID)
-
-		switch targetApp {
-		case "vk":
-			vk.SendMessage(targetID, message.Text)
-		case "telegram":
-			telegram.SendMessage(targetID, message.Text)
-		default:
-			panic("unknown app.")
-		}
-	}
 }
