@@ -14,9 +14,8 @@ type Message struct {
 	Room      Room
 	CreatedAt time.Time
 
-	Text    string `gorm:"-"`
-	UserID  int64  `gorm:"-"`
-	UserApp string `gorm:"-"`
+	Text string `gorm:"-"`
+	User User   `gorm:"-"`
 }
 
 func CreateMessage(roomID int) (message Message) {
@@ -30,19 +29,19 @@ func CreateMessage(roomID int) (message Message) {
 func (message Message) Handle() {
 	switch message.Text {
 	case "/start":
-		JoinRoom(message.UserID, message.UserApp)
+		JoinRoom(message.User)
 	case "/stop":
-		StopRoom(message.UserID, message.UserApp)
+		StopRoom(message.User)
 	default:
-		room, targetID, targetApp := FindRoom(message.UserID, message.UserApp)
+		room, target := FindRoom(message.User)
 
 		go CreateMessage(room.ID)
 
-		switch targetApp {
+		switch target.App {
 		case "vk":
-			vk.SendMessage(targetID, message.Text)
+			vk.SendMessage(target.ID, message.Text)
 		case "telegram":
-			telegram.SendMessage(targetID, message.Text)
+			telegram.SendMessage(target.ID, message.Text)
 		default:
 			panic("unknown app.")
 		}

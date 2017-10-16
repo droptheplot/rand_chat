@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/droptheplot/rand_chat/env"
-	"github.com/droptheplot/rand_chat/telegram"
 )
 
 type Room struct {
@@ -18,58 +17,60 @@ type Room struct {
 	Messages  []Message
 }
 
-func FindRoom(ID int64, app string) (room Room, targetID int64, targetApp string) {
-	env.DB.Where(`((owner_id = ? AND owner_app = ?) OR (guest_id = ? AND guest_app = ?))
-									AND active = TRUE`, ID, app, ID, app).First(&room)
-
-	if room.OwnerID == ID {
-		targetID = room.GuestID
-		targetApp = room.GuestApp
-	} else {
-		targetID = room.OwnerID
-		targetApp = room.OwnerApp
-	}
-
-	return room, targetID, targetApp
+func (room Room) Owner() User {
+	return User{ID: room.OwnerID, App: room.OwnerApp}
 }
 
-func JoinRoom(ID int64, app string) (room Room) {
-	env.DB.Where("guest_id IS NULL AND owner_id != ? AND active = TRUE", ID).First(&room)
+func (room Room) Guest() User {
+	return User{ID: room.GuestID, App: room.GuestApp}
+}
+
+// FindRoom returns Room and User to send message.
+func FindRoom(user User) (Room, User) {
+	var room Room
+	var target User
+
+	env.DB.Where(`((owner_id = ? AND owner_app = ?) OR (guest_id = ? AND guest_app = ?))
+									AND active = TRUE`, user.ID, user.App, user.ID, user.App).First(&room)
+
+	if room.Owner() == user {
+		target = room.Guest()
+	} else {
+		target = room.Owner()
+	}
+
+	return room, target
+}
+
+func JoinRoom(user User) (room Room) {
+	env.DB.Where("guest_id IS NULL AND owner_id != ? AND active = TRUE", user.ID).First(&room)
 
 	if env.DB.NewRecord(room) {
-		room = CreateRoom(ID, app)
+		room = CreateRoom(user)
 	} else {
-		env.DB.Model(&room).Updates(Room{GuestID: ID, GuestApp: app})
-
-		telegram.SendMessage(room.OwnerID, "Someone found, say hello!")
-		telegram.SendMessage(room.GuestID, "Someone found, say hello!")
+		env.DB.Model(&room).Updates(Room{GuestID: user.ID, GuestApp: user.App})
 	}
 
 	return room
 }
 
-func CreateRoom(ownerID int64, app string) (room Room) {
-	room = Room{OwnerID: ownerID, OwnerApp: app}
+func CreateRoom(user User) (room Room) {
+	room = Room{OwnerID: user.ID, OwnerApp: user.App}
 
 	env.DB.Create(&room)
 
-	telegram.SendMessage(room.OwnerID, "Waiting for someone.")
-
 	return room
 }
 
-func StopRoom(ID int64, app string) {
+func StopRoom(user User) {
 	var room Room
 
 	env.DB.Where(`((owner_id = ? AND owner_app = ?) OR (guest_id = ? AND guest_app = ?))
-									AND active = TRUE`, ID, ID).First(&room)
+									AND active = TRUE`, user.ID, user.ID).First(&room)
 
 	if env.DB.NewRecord(room) {
 		return
 	}
-
-	telegram.SendMessage(room.OwnerID, "Disconnected.")
-	telegram.SendMessage(room.GuestID, "Disconnected.")
 
 	env.DB.Model(&room).Update("active", false)
 }

@@ -43,9 +43,11 @@ func TelegramHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&update)
 
 	models.Message{
-		Text:    update.Message.Text,
-		UserID:  update.Message.User.ID,
-		UserApp: "telegram",
+		Text: update.Message.Text,
+		User: models.User{
+			ID:  update.Message.User.ID,
+			App: "telegram",
+		},
 	}.Handle()
 
 	w.WriteHeader(http.StatusOK)
@@ -66,9 +68,11 @@ func VKHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	models.Message{
-		Text:    event.Message.Body,
-		UserID:  event.Message.UserID,
-		UserApp: "vk",
+		Text: event.Message.Body,
+		User: models.User{
+			ID:  event.Message.UserID,
+			App: "vk",
+		},
 	}.Handle()
 
 	w.Write([]byte("ok"))
