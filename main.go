@@ -18,8 +18,6 @@ import (
 var templates = template.Must(template.ParseGlob("templates/*.html"))
 
 func main() {
-	telegram.SetWebhook()
-
 	r := mux.NewRouter()
 
 	r.HandleFunc("/", IndexHandler).Methods("GET")
