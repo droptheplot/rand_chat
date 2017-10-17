@@ -20,8 +20,6 @@ func init() {
 	}
 
 	DB.LogMode(true)
-
-	Migrate()
 }
 
 func Migrate() {
