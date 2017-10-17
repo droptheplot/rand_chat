@@ -6,13 +6,22 @@ import (
 )
 
 type config struct {
-	Webhook  string `json:"webhook"`
-	Database string `json:"database"`
-	Telegram string `json:"telegram"`
-	VK       string `json:"vk"`
-	VKToken  string `json:"vk_token"`
+	Database string   `json:"database"`
+	Telegram telegram `json:"telegram"`
+	VK       vk       `json:"vk"`
 }
 
+type telegram struct {
+	Webhook string `json:"webhook"`
+	Token   string `json:"token"`
+}
+
+type vk struct {
+	Confirmation string `json:"confirmation"`
+	Token        string `json:"token"`
+}
+
+// Config returns current configuration.
 var Config config
 
 func init() {

@@ -15,7 +15,7 @@ func SendMessage(peerID int64, message string) *http.Response {
 	response, _ := http.PostForm(
 		build("messages.send"),
 		url.Values{"peer_id": {strconv.FormatInt(peerID, 10)}, "message": {message},
-			"access_token": {env.Config.VKToken},
+			"access_token": {env.Config.VK.Token},
 			"v":            {"5.67"}},
 	)
 

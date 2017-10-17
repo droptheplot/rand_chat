@@ -1,6 +1,11 @@
 {
-  "webhook": "",
   "database": "",
-  "telegram": "",
-  "vk": ""
+  "telegram": {
+    "webhook": "",
+    "token": ""
+  },
+  "vk": {
+    "confirmation": "",
+    "token": ""
+  }
 }

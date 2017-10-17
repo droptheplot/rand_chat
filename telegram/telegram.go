@@ -21,11 +21,11 @@ func SendMessage(chatID int64, text string) *http.Response {
 }
 
 func SetWebhook() *http.Response {
-	response, _ := http.PostForm(build("setWebhook"), url.Values{"url": {env.Config.Webhook}})
+	response, _ := http.PostForm(build("setWebhook"), url.Values{"url": {env.Config.Telegram.Webhook}})
 
 	return response
 }
 
 func build(suffix string) string {
-	return fmt.Sprintf("%s/bot%s/%s", base, env.Config.Telegram, suffix)
+	return fmt.Sprintf("%s/bot%s/%s", base, env.Config.Telegram.Token, suffix)
 }

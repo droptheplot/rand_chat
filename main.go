@@ -56,7 +56,7 @@ func VKHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&event)
 
 	if event.Type == "confirmation" {
-		w.Write([]byte(env.Config.VK))
+		w.Write([]byte(env.Config.VK.Confirmation))
 		return
 	}
 
