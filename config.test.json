@@ -1,0 +1,11 @@
+{
+  "database": "postgres://localhost:5432/rand_chat_test?sslmode=disable",
+  "telegram": {
+    "webhook": "webhook",
+    "token": "token"
+  },
+  "vk": {
+    "confirmation": "confirmation",
+    "token": "token"
+  }
+}

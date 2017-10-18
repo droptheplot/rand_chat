@@ -2,6 +2,7 @@ package env
 
 import (
 	"encoding/json"
+	"flag"
 	"os"
 )
 
@@ -25,7 +26,15 @@ type vk struct {
 var Config config
 
 func init() {
-	file, err := os.Open("config.json")
+	var path = os.Getenv("RAND_CHAT_ROOT")
+
+	if flag.Lookup("test.v") == nil {
+		path += "/config.json"
+	} else {
+		path += "/config.test.json"
+	}
+
+	file, err := os.Open(path)
 
 	if err != nil {
 		panic(err)

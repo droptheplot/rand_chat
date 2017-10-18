@@ -6,4 +6,5 @@
 ## Getting Started
 
 * `cp config.example.json config.json`
+* Set `RAND_CHAT_ROOT` environment variable.
 * `go run main.go`
