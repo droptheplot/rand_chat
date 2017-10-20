@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"flag"
 	"os"
+	"path"
 )
 
 type config struct {
-	Database string   `json:"database"`
-	Telegram telegram `json:"telegram"`
-	VK       vk       `json:"vk"`
+	Database   string   `json:"database"`
+	Telegram   telegram `json:"telegram"`
+	VK         vk       `json:"vk"`
+	Migrations string
 }
 
 type telegram struct {
@@ -26,23 +28,23 @@ type vk struct {
 var Config config
 
 func init() {
-	var path = os.Getenv("RAND_CHAT_ROOT")
+	var configPath string
+
+	root := os.Getenv("RAND_CHAT_ROOT")
 
 	if flag.Lookup("test.v") == nil {
-		path += "/config.json"
+		configPath = path.Join(root, "/config.json")
 	} else {
-		path += "/config.test.json"
+		configPath = path.Join(root, "/config.test.json")
 	}
 
-	file, err := os.Open(path)
+	configFile, err := os.Open(configPath)
 
 	if err != nil {
 		panic(err)
 	}
 
-	json.NewDecoder(file).Decode(&Config)
+	json.NewDecoder(configFile).Decode(&Config)
 
-	if err != nil {
-		panic(err)
-	}
+	Config.Migrations = "file://" + path.Join(root, "/migrations")
 }
