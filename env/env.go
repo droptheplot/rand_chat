@@ -24,6 +24,16 @@ func init() {
 
 func Migrate() {
 	driver, _ := postgres.WithInstance(DB.DB(), &postgres.Config{})
-	migrations, _ := migrate.NewWithDatabaseInstance("file://migrations", "postgres", driver)
+	migrations, _ := migrate.NewWithDatabaseInstance(Config.Migrations, "postgres", driver)
 	migrations.Up()
+}
+
+func Drop() {
+	DB.Exec(`DROP SCHEMA public CASCADE;`)
+	DB.Exec(`CREATE SCHEMA public;`)
+}
+
+func Reset() {
+	Drop()
+	Migrate()
 }
