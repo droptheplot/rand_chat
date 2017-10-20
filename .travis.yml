@@ -1,0 +1,16 @@
+language: go
+
+go:
+  - 1.9
+
+services:
+  - postgresql
+
+env:
+ - RAND_CHAT_ROOT=$TRAVIS_BUILD_DIR
+
+before_script:
+  - psql -c 'create database rand_chat_test;' -U postgres
+
+script:
+  - go test ./...
