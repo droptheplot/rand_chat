@@ -63,14 +63,8 @@ func CreateRoom(user User) (room Room) {
 }
 
 func StopRoom(user User) {
-	var room Room
-
-	env.DB.Where(`((owner_id = ? AND owner_app = ?) OR (guest_id = ? AND guest_app = ?))
-									AND active = TRUE`, user.ID, user.ID).First(&room)
-
-	if env.DB.NewRecord(room) {
-		return
-	}
-
-	env.DB.Model(&room).Update("active", false)
+	env.DB.Model(&Room{}).Where(
+		`((owner_id = ? AND owner_app = ?) OR (guest_id = ? AND guest_app = ?)) AND active = TRUE`,
+		user.ID, user.App, user.ID, user.App,
+	).Update("active", false)
 }
