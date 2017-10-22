@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 
-	"github.com/droptheplot/rand_chat/env"
+	"github.com/jinzhu/gorm"
 )
 
 type Chart struct {
@@ -11,8 +11,8 @@ type Chart struct {
 	Count int       `json:"count"`
 }
 
-func GetCharts() (charts []Chart) {
-	env.DB.Find(&charts)
+func GetCharts(db *gorm.DB) (charts []Chart) {
+	db.Find(&charts)
 
 	return charts
 }

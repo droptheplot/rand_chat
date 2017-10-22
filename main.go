@@ -16,6 +16,7 @@ import (
 )
 
 var templates = template.Must(template.ParseGlob("templates/*.html"))
+var db = env.Init()
 
 func main() {
 	r := mux.NewRouter()
@@ -46,7 +47,7 @@ func TelegramHandler(w http.ResponseWriter, r *http.Request) {
 			ID:  update.Message.User.ID,
 			App: "telegram",
 		},
-	}.Handle()
+	}.Handle(db)
 
 	w.WriteHeader(http.StatusOK)
 }
@@ -71,7 +72,7 @@ func VKHandler(w http.ResponseWriter, r *http.Request) {
 			ID:  event.Message.UserID,
 			App: "vk",
 		},
-	}.Handle()
+	}.Handle(db)
 
 	w.Write([]byte("ok"))
 }
@@ -79,7 +80,7 @@ func VKHandler(w http.ResponseWriter, r *http.Request) {
 func ChartHandler(w http.ResponseWriter, r *http.Request) {
 	var charts = make(map[string][]interface{})
 
-	for _, chart := range models.GetCharts() {
+	for _, chart := range models.GetCharts(db) {
 		charts["dates"] = append(charts["dates"], chart.Date.Format("2 Jan"))
 		charts["counts"] = append(charts["counts"], chart.Count)
 	}

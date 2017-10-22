@@ -5,7 +5,9 @@ import (
 )
 
 func main() {
-	env.DB.Exec(`
+	db := env.Init()
+
+	db.Exec(`
 		DO $$
 		DECLARE
 			room_id integer;

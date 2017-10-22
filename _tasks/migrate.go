@@ -5,5 +5,7 @@ import (
 )
 
 func main() {
-	env.Migrate()
+	db := env.Init()
+
+	env.Migrate(db)
 }

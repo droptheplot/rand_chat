@@ -9,31 +9,30 @@ import (
 	_ "github.com/mattes/migrate/source/file"
 )
 
-var DB *gorm.DB
-
-func init() {
-	var err error
-	DB, err = gorm.Open("postgres", Config.Database)
+func Init() *gorm.DB {
+	db, err := gorm.Open("postgres", Config.Database)
 
 	if err != nil {
 		panic(err)
 	}
 
-	DB.LogMode(true)
+	db.LogMode(true)
+
+	return db
 }
 
-func Migrate() {
-	driver, _ := postgres.WithInstance(DB.DB(), &postgres.Config{})
+func Migrate(db *gorm.DB) {
+	driver, _ := postgres.WithInstance(db.DB(), &postgres.Config{})
 	migrations, _ := migrate.NewWithDatabaseInstance(Config.Migrations, "postgres", driver)
 	migrations.Up()
 }
 
-func Drop() {
-	DB.Exec(`DROP SCHEMA public CASCADE;`)
-	DB.Exec(`CREATE SCHEMA public;`)
+func Drop(db *gorm.DB) {
+	db.Exec(`DROP SCHEMA public CASCADE;`)
+	db.Exec(`CREATE SCHEMA public;`)
 }
 
-func Reset() {
-	Drop()
-	Migrate()
+func Reset(db *gorm.DB) {
+	Drop(db)
+	Migrate(db)
 }

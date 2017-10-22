@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 
-	"github.com/droptheplot/rand_chat/env"
+	"github.com/jinzhu/gorm"
 )
 
 type Room struct {
@@ -26,11 +26,11 @@ func (room Room) Guest() User {
 }
 
 // FindRoom returns Room and User to send message.
-func FindRoom(user User) (Room, User) {
+func FindRoom(db *gorm.DB, user User) (Room, User) {
 	var room Room
 	var target User
 
-	env.DB.Where(`((owner_id = ? AND owner_app = ?) OR (guest_id = ? AND guest_app = ?))
+	db.Where(`((owner_id = ? AND owner_app = ?) OR (guest_id = ? AND guest_app = ?))
 									AND active = TRUE`, user.ID, user.App, user.ID, user.App).First(&room)
 
 	if room.Owner() == user {
@@ -42,28 +42,28 @@ func FindRoom(user User) (Room, User) {
 	return room, target
 }
 
-func JoinRoom(user User) (room Room) {
-	env.DB.Where("guest_id IS NULL AND owner_id != ? AND active = TRUE", user.ID).First(&room)
+func JoinRoom(db *gorm.DB, user User) (room Room) {
+	db.Where("guest_id IS NULL AND owner_id != ? AND active = TRUE", user.ID).First(&room)
 
-	if env.DB.NewRecord(room) {
-		room = CreateRoom(user)
+	if db.NewRecord(room) {
+		room = CreateRoom(db, user)
 	} else {
-		env.DB.Model(&room).Updates(Room{GuestID: user.ID, GuestApp: user.App})
+		db.Model(&room).Updates(Room{GuestID: user.ID, GuestApp: user.App})
 	}
 
 	return room
 }
 
-func CreateRoom(user User) (room Room) {
+func CreateRoom(db *gorm.DB, user User) (room Room) {
 	room = Room{OwnerID: user.ID, OwnerApp: user.App}
 
-	env.DB.Create(&room)
+	db.Create(&room)
 
 	return room
 }
 
-func StopRoom(user User) {
-	env.DB.Model(&Room{}).Where(
+func StopRoom(db *gorm.DB, user User) {
+	db.Model(&Room{}).Where(
 		`((owner_id = ? AND owner_app = ?) OR (guest_id = ? AND guest_app = ?)) AND active = TRUE`,
 		user.ID, user.App, user.ID, user.App,
 	).Update("active", false)

@@ -3,9 +3,9 @@ package models
 import (
 	"time"
 
-	"github.com/droptheplot/rand_chat/env"
 	"github.com/droptheplot/rand_chat/telegram"
 	"github.com/droptheplot/rand_chat/vk"
+	"github.com/jinzhu/gorm"
 )
 
 type Message struct {
@@ -18,24 +18,24 @@ type Message struct {
 	User User   `gorm:"-"`
 }
 
-func CreateMessage(roomID int) (message Message) {
+func CreateMessage(db *gorm.DB, roomID int) (message Message) {
 	message = Message{RoomID: roomID}
 
-	env.DB.Create(&message)
+	db.Create(&message)
 
 	return message
 }
 
-func (message Message) Handle() {
+func (message Message) Handle(db *gorm.DB) {
 	switch message.Text {
 	case "/start":
-		JoinRoom(message.User)
+		JoinRoom(db, message.User)
 	case "/stop":
-		StopRoom(message.User)
+		StopRoom(db, message.User)
 	default:
-		room, target := FindRoom(message.User)
+		room, target := FindRoom(db, message.User)
 
-		go CreateMessage(room.ID)
+		go CreateMessage(db, room.ID)
 
 		switch target.App {
 		case "vk":
