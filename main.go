@@ -26,7 +26,12 @@ func main() {
 	r.HandleFunc("/api/telegram", TelegramHandler).Methods("POST")
 	r.HandleFunc("/api/vk", VKHandler).Methods("POST")
 
-	http.ListenAndServe(":8080", handlers.LoggingHandler(os.Stdout, r))
+	http.ListenAndServeTLS(
+		":443",
+		env.Config.TLS.Cert,
+		env.Config.TLS.Key,
+		handlers.LoggingHandler(os.Stdout, r),
+	)
 }
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {

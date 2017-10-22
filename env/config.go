@@ -11,6 +11,7 @@ type config struct {
 	Database   string   `json:"database"`
 	Telegram   telegram `json:"telegram"`
 	VK         vk       `json:"vk"`
+	TLS        tls      `json:"tls"`
 	Migrations string
 }
 
@@ -22,6 +23,11 @@ type telegram struct {
 type vk struct {
 	Confirmation string `json:"confirmation"`
 	Token        string `json:"token"`
+}
+
+type tls struct {
+	Cert string `json:"cert"`
+	Key  string `json:"key"`
 }
 
 // Config returns current configuration.
