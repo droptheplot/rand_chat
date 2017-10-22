@@ -3,8 +3,6 @@ package models
 import (
 	"time"
 
-	"github.com/droptheplot/rand_chat/telegram"
-	"github.com/droptheplot/rand_chat/vk"
 	"github.com/jinzhu/gorm"
 )
 
@@ -35,15 +33,10 @@ func (message Message) Handle(db *gorm.DB) {
 	default:
 		room, target := FindRoom(db, message.User)
 
-		go CreateMessage(db, room.ID)
+		if !db.NewRecord(room) {
+			go CreateMessage(db, room.ID)
 
-		switch target.App {
-		case "vk":
-			vk.SendMessage(target.ID, message.Text)
-		case "telegram":
-			telegram.SendMessage(target.ID, message.Text)
-		default:
-			panic("unknown app.")
+			target.SendMessage(message.Text)
 		}
 	}
 }
