@@ -1,3 +1,4 @@
+DROP TYPE IF EXISTS app;
 CREATE TYPE app AS ENUM ('telegram', 'vk');
 
 CREATE TABLE IF NOT EXISTS rooms (
