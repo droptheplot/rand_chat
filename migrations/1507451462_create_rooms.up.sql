@@ -14,4 +14,4 @@ CREATE TABLE IF NOT EXISTS rooms (
   CHECK ((guest_id IS NOT NULL AND guest_app IS NOT NULL) OR (guest_id IS NULL AND guest_app IS NULL))
 );
 
-CREATE UNIQUE INDEX ON rooms (owner_id) WHERE active = 'true';
+CREATE UNIQUE INDEX ON rooms (owner_id, owner_app) WHERE active = 'true';
