@@ -30,16 +30,16 @@ func TestJoinRoom(t *testing.T) {
 	tx := db.Begin()
 	defer tx.Rollback()
 
-	tx.Create(&Room{OwnerID: 1, OwnerApp: "vk"})
+	room := Room{OwnerID: 1, OwnerApp: "vk"}
+
+	tx.Create(&room)
 	tx.Create(&Room{OwnerID: 2, OwnerApp: "telegram", GuestID: 1, GuestApp: "vk"})
 	tx.Create(&Room{OwnerID: 3, OwnerApp: "vk", Active: false})
 
 	user := User{ID: 3, App: "vk"}
 
-	JoinRoom(tx, user)
+	room = JoinRoom(tx, room, user)
 
-	var room Room
-	tx.Where(&Room{OwnerID: 1, OwnerApp: "vk"}).First(&room)
 	assert.Equal(t, user, room.Guest())
 
 	var count int
@@ -55,8 +55,23 @@ func TestFindRoom(t *testing.T) {
 	tx.Create(&Room{OwnerID: 1, OwnerApp: "telegram", GuestID: 2, GuestApp: "vk"})
 
 	user := User{ID: 1, App: "vk"}
-	room, target := FindRoom(tx, user)
+	room, err := FindRoom(tx, user)
 
 	assert.Equal(t, user, room.Owner())
+	assert.NoError(t, err)
+}
+
+func TestFindRoomError(t *testing.T) {
+	user := User{ID: 1, App: "vk"}
+	room, err := FindRoom(db, user)
+
+	assert.Equal(t, Room{}, room)
+	assert.Error(t, err)
+}
+
+func TestTarget(t *testing.T) {
+	room := Room{OwnerID: 1, OwnerApp: "vk", GuestID: 2, GuestApp: "vk"}
+	target := room.Target(User{ID: 1, App: "vk"})
+
 	assert.Equal(t, User{ID: 2, App: "vk"}, target)
 }

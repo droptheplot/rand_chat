@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -25,31 +26,44 @@ func (room Room) Guest() User {
 	return User{ID: room.GuestID, App: room.GuestApp}
 }
 
+func (room Room) Target(user User) User {
+	if room.Owner() == user {
+		return room.Guest()
+	} else {
+		return room.Owner()
+	}
+}
+
 // FindRoom returns Room and User to send message.
-func FindRoom(db *gorm.DB, user User) (Room, User) {
+func FindRoom(db *gorm.DB, user User) (Room, error) {
 	var room Room
-	var target User
 
 	db.Where(`((owner_id = ? AND owner_app = ?) OR (guest_id = ? AND guest_app = ?))
 									AND active = TRUE`, user.ID, user.App, user.ID, user.App).First(&room)
 
-	if room.Owner() == user {
-		target = room.Guest()
-	} else {
-		target = room.Owner()
+	if db.NewRecord(room) {
+		return Room{}, errors.New("no rooms found")
 	}
 
-	return room, target
+	return room, nil
 }
 
-func JoinRoom(db *gorm.DB, user User) (room Room) {
+// FindFreeRoom returns Room where owner is not user and no guest present.
+func FindFreeRoom(db *gorm.DB, user User) (Room, error) {
+	var room Room
+
 	db.Where("guest_id IS NULL AND owner_id != ? AND active = TRUE", user.ID).First(&room)
 
 	if db.NewRecord(room) {
-		room = CreateRoom(db, user)
-	} else {
-		db.Model(&room).Updates(Room{GuestID: user.ID, GuestApp: user.App})
+		return Room{}, errors.New("no rooms available")
 	}
+
+	return room, nil
+}
+
+// JoinRoom changes guest to given user.
+func JoinRoom(db *gorm.DB, room Room, user User) Room {
+	db.Model(&room).Updates(Room{GuestID: user.ID, GuestApp: user.App})
 
 	return room
 }
