@@ -15,7 +15,7 @@ import (
 	"github.com/droptheplot/rand_chat/vk"
 )
 
-var templates = template.Must(template.ParseGlob("templates/*.html"))
+var templates = template.Must(template.ParseGlob(env.Config.Templates))
 var db = env.Init()
 
 func main() {

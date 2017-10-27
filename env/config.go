@@ -13,6 +13,7 @@ type config struct {
 	VK         vk       `json:"vk"`
 	TLS        tls      `json:"tls"`
 	Migrations string
+	Templates  string
 }
 
 type telegram struct {
@@ -53,4 +54,5 @@ func init() {
 	json.NewDecoder(configFile).Decode(&Config)
 
 	Config.Migrations = "file://" + path.Join(root, "/migrations")
+	Config.Templates = path.Join(root, "/templates/*.html")
 }
