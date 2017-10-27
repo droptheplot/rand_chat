@@ -26,6 +26,10 @@ func (room Room) Guest() User {
 	return User{ID: room.GuestID, App: room.GuestApp}
 }
 
+func (room Room) IsEmpty() bool {
+	return room.Guest() == User{}
+}
+
 func (room Room) Target(user User) User {
 	if room.Owner() == user {
 		return room.Guest()

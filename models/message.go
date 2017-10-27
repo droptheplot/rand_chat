@@ -30,26 +30,34 @@ func (message Message) Handle(db *gorm.DB) {
 
 	switch message.Text {
 	case "/start":
-		tx := db.Begin()
-
-		room, err = FindFreeRoom(tx, message.User)
+		room, err = FindFreeRoom(db, message.User)
 
 		if err != nil {
-			room = CreateRoom(tx, message.User)
+			CreateRoom(db, message.User)
+			message.User.SendMessage("Ищем собеседника...")
+		} else {
+			JoinRoom(db, room, message.User)
+
+			room, _ = FindRoom(db, message.User)
+
+			room.Owner().SendMessage("Собеседник найдет, скажите привет!")
+			room.Guest().SendMessage("Собеседник найдет, скажите привет!")
 		}
-
-		JoinRoom(tx, room, message.User)
-
-		tx.Commit()
 	case "/stop":
 		StopRoom(db, message.User)
 	default:
 		room, err = FindRoom(db, message.User)
 
-		if err == nil {
-			go CreateMessage(db, room.ID)
+		if err != nil {
+			message.User.SendMessage("Используйте /start чтобы найти собеседника.")
+		} else {
+			if room.IsEmpty() {
+				message.User.SendMessage("Ищем собеседника...")
+			} else {
+				go CreateMessage(db, room.ID)
 
-			room.Target(message.User).SendMessage(message.Text)
+				room.Target(message.User).SendMessage(message.Text)
+			}
 		}
 	}
 }
