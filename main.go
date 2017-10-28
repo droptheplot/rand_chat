@@ -4,19 +4,17 @@ import (
 	"encoding/json"
 	"html/template"
 	"net/http"
-	"os"
 
-	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 
-	"github.com/droptheplot/rand_chat/env"
 	"github.com/droptheplot/rand_chat/app"
+	"github.com/droptheplot/rand_chat/env"
 	"github.com/droptheplot/rand_chat/telegram"
 	"github.com/droptheplot/rand_chat/vk"
 )
 
 var templates = template.Must(template.ParseGlob(env.Config.Templates))
-var db = env.Init()
+var db, logger = env.Init()
 
 func main() {
 	r := mux.NewRouter()
@@ -26,12 +24,7 @@ func main() {
 	r.HandleFunc("/api/telegram", TelegramHandler).Methods("POST")
 	r.HandleFunc("/api/vk", VKHandler).Methods("POST")
 
-	http.ListenAndServeTLS(
-		":443",
-		env.Config.TLS.Cert,
-		env.Config.TLS.Key,
-		handlers.LoggingHandler(os.Stdout, r),
-	)
+	http.ListenAndServeTLS(":443", env.Config.TLS.Cert, env.Config.TLS.Key, r)
 }
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
@@ -54,7 +47,7 @@ func TelegramHandler(w http.ResponseWriter, r *http.Request) {
 			ID:  update.Message.User.ID,
 			App: "telegram",
 		},
-	}.Handle(db)
+	}.Handle(db, logger)
 
 	w.WriteHeader(http.StatusOK)
 }
@@ -79,7 +72,7 @@ func VKHandler(w http.ResponseWriter, r *http.Request) {
 			ID:  event.Message.UserID,
 			App: "vk",
 		},
-	}.Handle(db)
+	}.Handle(db, logger)
 
 	w.Write([]byte("ok"))
 }
