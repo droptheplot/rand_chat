@@ -67,7 +67,7 @@ func (message Message) Handle(db *gorm.DB, logger zerolog.Logger) {
 		room, err = FindRoom(db, message.User)
 
 		if err != nil {
-			message.User.SendMessage("Используйте /start чтобы найти собеседника.")
+			message.User.SendMessage("Отправьте /start чтобы найти собеседника.")
 
 			log.Str("error", "no_start")
 		} else {
