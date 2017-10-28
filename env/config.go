@@ -14,6 +14,7 @@ type config struct {
 	TLS        tls      `json:"tls"`
 	Migrations string
 	Templates  string
+	Static     string
 }
 
 type telegram struct {
@@ -55,4 +56,5 @@ func init() {
 
 	Config.Migrations = "file://" + path.Join(root, "/migrations")
 	Config.Templates = path.Join(root, "/templates/*.html")
+	Config.Static = path.Join(root, "/static")
 }

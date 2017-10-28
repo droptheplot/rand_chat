@@ -24,6 +24,8 @@ func main() {
 	r.HandleFunc("/api/telegram", TelegramHandler).Methods("POST")
 	r.HandleFunc("/api/vk", VKHandler).Methods("POST")
 
+	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir(env.Config.Static))))
+
 	http.ListenAndServeTLS(":443", env.Config.TLS.Cert, env.Config.TLS.Key, r)
 }
 
