@@ -1,4 +1,4 @@
-package models
+package app
 
 import (
 	"github.com/droptheplot/rand_chat/telegram"

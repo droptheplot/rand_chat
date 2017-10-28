@@ -10,7 +10,7 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/droptheplot/rand_chat/env"
-	"github.com/droptheplot/rand_chat/models"
+	"github.com/droptheplot/rand_chat/app"
 	"github.com/droptheplot/rand_chat/telegram"
 	"github.com/droptheplot/rand_chat/vk"
 )
@@ -48,9 +48,9 @@ func TelegramHandler(w http.ResponseWriter, r *http.Request) {
 	var update telegram.Update
 	json.NewDecoder(r.Body).Decode(&update)
 
-	models.Message{
+	app.Message{
 		Text: update.Message.Text,
-		User: models.User{
+		User: app.User{
 			ID:  update.Message.User.ID,
 			App: "telegram",
 		},
@@ -73,9 +73,9 @@ func VKHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	models.Message{
+	app.Message{
 		Text: event.Message.Body,
-		User: models.User{
+		User: app.User{
 			ID:  event.Message.UserID,
 			App: "vk",
 		},
@@ -87,7 +87,7 @@ func VKHandler(w http.ResponseWriter, r *http.Request) {
 func ChartHandler(w http.ResponseWriter, r *http.Request) {
 	var charts = make(map[string][]interface{})
 
-	for _, chart := range models.GetCharts(db) {
+	for _, chart := range app.GetCharts(db) {
 		charts["dates"] = append(charts["dates"], chart.Date.Format("2 Jan"))
 		charts["counts"] = append(charts["counts"], chart.Count)
 	}
