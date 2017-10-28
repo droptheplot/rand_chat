@@ -35,6 +35,8 @@ func main() {
 }
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload")
+
 	err := templates.ExecuteTemplate(w, "index.html", map[string]string{"Title": "Рандомный чат"})
 
 	if err != nil {
