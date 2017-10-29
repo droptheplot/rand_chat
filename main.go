@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 
 	"github.com/droptheplot/rand_chat/app"
@@ -28,7 +29,7 @@ func main() {
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir(env.Config.Static))))
 
 	srv := &http.Server{
-		Handler:      r,
+		Handler:      handlers.RecoveryHandler()(r),
 		Addr:         ":443",
 		WriteTimeout: 30 * time.Second,
 		ReadTimeout:  30 * time.Second,
