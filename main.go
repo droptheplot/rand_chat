@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"html/template"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 
@@ -26,7 +27,14 @@ func main() {
 
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir(env.Config.Static))))
 
-	http.ListenAndServeTLS(":443", env.Config.TLS.Cert, env.Config.TLS.Key, r)
+	srv := &http.Server{
+		Handler:      r,
+		Addr:         ":443",
+		WriteTimeout: 30 * time.Second,
+		ReadTimeout:  30 * time.Second,
+	}
+
+	srv.ListenAndServeTLS(env.Config.TLS.Cert, env.Config.TLS.Key)
 }
 
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
