@@ -1,11 +1,14 @@
 package app
 
 import (
+	"sync"
 	"time"
 
 	"github.com/jinzhu/gorm"
 	"github.com/rs/zerolog"
 )
+
+var mutex sync.Mutex
 
 type Message struct {
 	ID        int
@@ -26,6 +29,9 @@ func CreateMessage(db *gorm.DB, roomID int) (message Message) {
 }
 
 func (message Message) Handle(db *gorm.DB, logger zerolog.Logger) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	var room Room
 	var err error
 
