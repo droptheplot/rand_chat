@@ -5,7 +5,7 @@ import (
 )
 
 func main() {
-	db := env.Init()
+	db, _ := env.Init()
 
 	db.Exec(`
 		DO $$
@@ -13,14 +13,16 @@ func main() {
 			room_id integer;
 			i integer = 0;
 		BEGIN
-			INSERT INTO rooms (owner_id, guest_id) VALUES (random() * 100, random() * 100) RETURNING id INTO room_id;
+			INSERT INTO rooms (owner_id, owner_app, guest_id, guest_app)
+				VALUES (random() * 100, 'vk', random() * 100, 'telegram')
+				RETURNING id INTO room_id;
 
 			WHILE i < 10
 			LOOP
 				i := i + 1;
 
 				INSERT INTO messages (room_id, created_at) VALUES
-					(room_id, now() - (i * (random() * 100) || ' minutes')::interval);
+					(room_id, now() - (i * (random() * 1000) || ' minutes')::interval);
 			END LOOP;
 		END $$;
 	`)
