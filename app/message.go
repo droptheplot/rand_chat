@@ -66,7 +66,20 @@ func (message Message) Handle(db *gorm.DB, logger zerolog.Logger) {
 	case "/stop":
 		log.Str("type", "stop")
 
-		StopRoom(db, message.User)
+		room, err := FindRoom(db, message.User)
+
+		if err != nil {
+			message.User.SendMessage("Отправьте /start чтобы найти собеседника.")
+
+			log.Str("action", "no_start")
+		} else {
+			StopRoom(db, room)
+
+			room.Owner().SendMessage("Собеседник отключился.")
+			room.Guest().SendMessage("Собеседник отключился.")
+
+			log.Str("action", "room_stopped")
+		}
 	default:
 		log.Str("type", "text")
 

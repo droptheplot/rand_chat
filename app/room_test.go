@@ -10,20 +10,20 @@ func TestStopRoom(t *testing.T) {
 	tx := db.Begin()
 	defer tx.Rollback()
 
-	tx.Create(&Room{OwnerID: 1, OwnerApp: "vk"})
+	room := Room{OwnerID: 1, OwnerApp: "vk"}
+
+	tx.Create(&room)
 	tx.Create(&Room{OwnerID: 2, OwnerApp: "telegram", GuestID: 1, GuestApp: "vk"})
 	tx.Create(&Room{OwnerID: 3, OwnerApp: "telegram"})
 	tx.Create(&Room{OwnerID: 4, OwnerApp: "telegram"})
 
-	StopRoom(tx, User{ID: 1, App: "vk"})
+	room = StopRoom(tx, room)
 
-	var room Room
-	tx.Where(&Room{OwnerID: 1, OwnerApp: "vk"}).First(&room)
 	assert.False(t, room.Active)
 
 	var count int
 	tx.Model(&Room{}).Where(&Room{Active: true}).Count(&count)
-	assert.Equal(t, 2, count)
+	assert.Equal(t, 3, count)
 }
 
 func TestJoinRoom(t *testing.T) {

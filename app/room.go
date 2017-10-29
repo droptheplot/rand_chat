@@ -80,9 +80,8 @@ func CreateRoom(db *gorm.DB, user User) (room Room) {
 	return room
 }
 
-func StopRoom(db *gorm.DB, user User) {
-	db.Model(&Room{}).Where(
-		`((owner_id = ? AND owner_app = ?) OR (guest_id = ? AND guest_app = ?)) AND active = TRUE`,
-		user.ID, user.App, user.ID, user.App,
-	).Update("active", false)
+func StopRoom(db *gorm.DB, room Room) Room {
+	db.Model(&room).Update("active", false)
+
+	return room
 }
